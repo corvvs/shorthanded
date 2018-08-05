@@ -1,7 +1,7 @@
 def powmod(b,r,mod)
   a = 1
   while r > 0
-    if r%2 == 0
+    if r%2 == 1
       a = a * b % mod
     end
     b = b * b % mod
@@ -27,3 +27,6 @@ def inv_factorial(n, mod)
   fs
 end
 
+# TESTCODE
+p     factorial(10, 1000000007)
+p inv_factorial(10, 1000000007)
