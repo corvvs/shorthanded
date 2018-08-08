@@ -1,3 +1,4 @@
+# returns b^r % mod; O(log(r))
 def powmod(b,r,mod)
   a = 1
   while r > 0
@@ -10,13 +11,14 @@ def powmod(b,r,mod)
   a
 end
 
+# returns [0!, 1!, ... , n!]; O(n)
 def factorial(n, mod)
   fs = [1]
   (1..n).each{ |k| fs << (fs[-1] * k) % mod }
   fs
 end
 
-# modular-inverse of factorial by mod (assuming prime for every 1..n)
+# modular-inverse of factorial by mod (assuming prime for every 1..n); O(n * log(mod))
 def inv_factorial(n, mod)
   fs = [1]
   f = 1

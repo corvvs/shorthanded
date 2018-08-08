@@ -1,5 +1,5 @@
 
-# parse edges of a tree
+# parse edges of a tree; O(number_es)
 def parse_tree(number_es)
   es = {}
   number_es.times do
@@ -10,7 +10,7 @@ def parse_tree(number_es)
   es
 end
 
-# scan nodes by dfs; shallower to deeper
+# scan nodes by dfs; shallower to deeper; O(nodes)
 def dfs_tree_preorder(start, edges)
   require 'set'
   queue = [start]
@@ -25,7 +25,7 @@ def dfs_tree_preorder(start, edges)
   end
 end
 
-# scan nodes by dfs; deeper to shallower
+# scan nodes by dfs; deeper to shallower; O(nodes)
 def dfs_tree_postorder(start, edges)
   require 'set'
   queue = [[start,nil]]

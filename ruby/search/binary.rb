@@ -1,5 +1,5 @@
 
-# find an index: max{ i | yield(i) == true  }
+# find an index: max{ i | yield(i) == true  }; O(log(b-a))
 def bsearch_int_left(a, b)
   return nil if !yield(a)
   while a < b
@@ -13,7 +13,7 @@ def bsearch_int_left(a, b)
   a <= b ? a : nil
 end
 
-# find a number x near to: max{ x | yield(x) == true }
+# find a number about to: max{ x | yield(x) == true } within delta; O(log(b-a) - log(delta))
 def bsearch_float_left(a, b, delta)
   return nil if !yield(a)
   while b - a >= delta
