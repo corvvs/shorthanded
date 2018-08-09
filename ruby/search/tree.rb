@@ -13,15 +13,13 @@ end
 # scan nodes by dfs; shallower to deeper; O(nodes)
 def dfs_tree_preorder(start, edges)
   require 'set'
-  queue = [start]
+  queue = [[start,nil]]
   visited = Set[start]
-  fromfrom = nil
   while queue.size > 0
-    f = queue.pop
+    f,ff = *(queue.pop)    
     ts = edges[f].keys.reject{ |t| visited.member?(t) }
-    yield(f, fromfrom)
-    fromfrom = f
-    ts.each{ |t| visited << t; queue << t }
+    yield(f, ff)
+    ts.each{ |t| visited << t; queue << [t,f] }
   end
 end
 
