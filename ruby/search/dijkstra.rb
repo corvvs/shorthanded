@@ -1,30 +1,46 @@
 require_relative '../container/updatable_heap'
+require 'benchmark'
 
-def shortest_dijkstra(nodes, edges, start)
-  infinity = edges.values.map{ |h| h.values.map{ |v| v.abs }.inject(:+) }.inject(:+) + 1
-  ns = Updatable_Binary_Heap.new { |s,t| s[:d] <= t[:d] }
-  vs = Hash[nodes.map{ |n| [n, ns.insert({ id: n, d: n == start ? 0 : infinity, prev: nil })] }]
+def shortest_dfs(nodes, edges, start, infinity: 1 << 32)
+  def r(current, edges, weight, visited = {})
+    visited[current] = weight
+    (edges[current] || {}).each{ |to,w|
+      nw = w + weight
+      next if visited[to] < nw
+      r(to, edges, nw, visited)
+    }
+    visited
+  end
+  vs = Hash[nodes.map{ |n| [n,infinity] }]
+  r(start, edges, 0, vs).map{ |node,d| { id:node, d:d } } 
+end
+
+def shortest_dijkstra(nodes, edges, start, infinity: 1 << 32)
+  ns = Updatable_Binary_Heap.new(list: nodes.map{ |n| { id: n, d: n == start ? 0 : infinity } }) { |s,t| s[:d] <= t[:d] }
+  vs = Hash[ns.a.map{ |v| [v[:v][:id], v]}]
   #p ns
   #p vs
-
+  determined = {}
   cnt = 0
   while ui = ns.shift
     u = ui[:v]
-    edges[u[:id]].each{ |vid,w|
-      cnt += 1
+    cnt += 1
+    break if u[:d] >= infinity
+    next if determined[u[:id]]
+    determined[u[:id]] = 1
+    next unless h = edges[u[:id]]
+    h.each{ |vid,w|
       vi = vs[vid]
       v = vi[:v]
-      #p [u,v,w]
-      if v[:d] > u[:d] + w
-        v[:d] = u[:d] + w
-        v[:prev] = u
-        ns.update_node(vi, v)
-      end
+      next if v[:d] <= u[:d] + w
+      v[:d] = u[:d] + w
+      #ns.insert(v)
+      ns.update_node(vi, v)
+      #p ns.head
     }
   end
-  #p cnt
-
-  vs.values
+  $stderr.puts cnt, nodes.size
+  vs.values.map{ |v| v[:v] }
 end
 
 # TESTCODE 
@@ -53,21 +69,25 @@ A = gets.split.map(&:to_i)
 Nodes = (1..N).to_a
 edges = {}
 reverse_edges = {}
+infinity = 1
 M.times {
   s,t,w = gets.split.map(&:to_i)
   edges[s] ||= {}
   reverse_edges[t] ||= {}
+  infinity += w
   edges[s][t] = reverse_edges[t][s] = w
 }
 
-fd = Hash[shortest_dijkstra(Nodes, edges, 1).map{ |n| 
-  u = n[:v]
-  [u[:id], u[:d]]
-}]
-
-bd = Hash[shortest_dijkstra(Nodes, reverse_edges, 1).map{ |n|
-  u = n[:v]
-  [u[:id], u[:d]]
-}]
+#edges.each{ |f,h| p [f,h]}
+r1,r2 = nil,nil
+t1 = Benchmark.realtime do
+  r1 = shortest_dfs(Nodes, edges, 1, infinity: infinity).sort_by{ |n| n[:id] }.map{ |n| n[:d] }.inject(:+)
+end
+t2 = Benchmark.realtime do
+  #bd = shortest_dfs(Nodes, reverse_edges, 1, infinity: infinity).sort_by{ |n| n[:id] }.map{ |n| n[:d] }
+  r2 = shortest_dijkstra(Nodes, edges, 1, infinity: infinity).sort_by{ |n| n[:id] }.map{ |n| n[:d] }.inject(:+)
+end
+p r1,r2,r1==r2,t1,t2
+# bd = shortest_dijkstra(Nodes, reverse_edges, 1, infinity: infinity).sort_by{ |n| n[:v][:id] }.map{ |n| n[:v][:d] }
 #p fd, bd
-puts Nodes.map{ |i| [T - fd[i] - bd[i], 0].max * A[i-1] }.max
+#puts (0...N).map{ |i| (fd[i] == infinity || bd[i] == infinity) ? 0 : [T - fd[i] - bd[i], 0].max * A[i] }.max
