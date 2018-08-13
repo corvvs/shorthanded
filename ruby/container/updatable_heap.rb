@@ -1,17 +1,17 @@
 class Updatable_Binary_Heap
-  def initialize(&comparator)
-    @array = [nil]
-    @comparator = comparator
-    @m = @array.size
+  def initialize(list: [], &pred)
+    @a = [nil] + list.sort{ |a,b| pred.call(a,b) ? -1 : 1 }.map.with_index{ |v,i| { i: i+1, v: v }  }
+    @pred = pred
+    @m = @a.size
   end
 
   def insert(x)
     node = { i: @m, v: x }
     case 
-    when @m < @array.size
-      @array[@m] = node
+    when @m < @a.size
+      @a[@m] = node
     else
-      @array << node
+      @a << node
     end
     up_heap(@m)
     @m += 1
@@ -20,14 +20,15 @@ class Updatable_Binary_Heap
 
   def up_heap(i)
     while (j = i >> 1) > 0
-      return if @comparator.call(@array[j][:v], @array[i][:v])
+      break if @pred.call(@a[j][:v], @a[i][:v])
       swap_node(i,j)
       i = j
     end
+    i
   end
 
   def head
-    @array[@m > 1 ? 1 : 0]
+    @a[@m > 1 ? 1 : 0]
   end
 
   def shift
@@ -35,32 +36,32 @@ class Updatable_Binary_Heap
     @m -= 1
     swap_node(1, @m)
     down_heap(1)
-    @array[@m]
+    @a[@m]
   end
 
   def down_heap(i)
     while (j = i << 1) < @m
-      l = j+1 < @m && !@comparator.call(@array[j][:v], @array[j+1][:v]) ? j+1 : j
-      return if @comparator.call(@array[i][:v], @array[l][:v])
-      swap_node(i,l)
-      i = l
+      j |= ((j|1) < @m && !@pred.call(@a[j][:v], @a[j|1][:v])) ? 1 : 0
+      break if @pred.call(@a[i][:v], @a[j][:v])
+      swap_node(i,j)
+      i = j
     end
+    i
   end
 
   def swap_node(i,j)
-    @array[i][:i], @array[j][:i] = @array[j][:i], @array[i][:i]
-    @array[i], @array[j] = @array[j], @array[i]
+    @a[i][:i], @a[j][:i] = @a[j][:i], @a[i][:i]
+    @a[i], @a[j] = @a[j], @a[i]
   end
 
   def update_node(node, x)
     i = node[:i]
     node[:v] = x
-    down_heap(i)
-    up_heap(i)
+    down_heap(i) == i && up_heap(i)
   end
 
-  def array
-    @array[1...@m].map{ |n| n[:v]}
+  def a
+    @a[1...@m]
   end
 end
 
@@ -74,7 +75,7 @@ end
 
 # p nodes[0]
 # #p nodes.sort_by{ |n| n[:i] }.map{ |n| n[:v] }
-# #p heap.array
+# #p heap.a
 # heap.update_node(nodes[0], -100)
-# #p heap.array
+# #p heap.a
 # p nodes[0]
