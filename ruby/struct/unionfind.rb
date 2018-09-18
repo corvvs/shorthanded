@@ -53,6 +53,7 @@ class UnionFind_UnionByRank
 end
 
 # levels with finding
+# Verified: https://beta.atcoder.jp/contests/abc065/tasks/arc076_b?lang=en
 class UnionFind_PathCompression
   attr_reader :rank, :parent, :value
   attr_writer :rank, :parent
