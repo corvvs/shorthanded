@@ -11,6 +11,10 @@ def powmod(b,r,mod)
   a
 end
 
+def invmod(f, mod)
+  powmod(f, mod-2, mod)
+end
+
 # returns [0!, 1!, ... , n!]; O(n)
 def factorial(n, mod)
   fs = [1]
@@ -24,7 +28,7 @@ def inv_factorial(n, mod)
   f = 1
   (1..n).each{ |k|
     f = f * k % mod
-    fs << powmod(f, mod-2, mod)
+    fs << invmod(f, mod)
   }
   fs
 end
